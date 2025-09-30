@@ -47,7 +47,8 @@ Let's analyze the question of alcohol consumption before and while consuming the
 daily_alc <- data %>% 
   drop_na() %>% 
   filter(`Question Name` == "daily_alc") %>% 
-  mutate(Value = ifelse(Value == 2, 1, 0))
+  mutate(Value = ifelse(Value == 2, 1, 0),
+         bev = ifelse(Battery == "Beverage Dayly", 1, 0))
 
 daily_alc_stats <- daily_alc %>% 
   group_by(Battery) %>% 
@@ -94,5 +95,36 @@ predict(model)[1:21]
 ```
 ***
 
-We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol.  
+We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol. Now, let's propose a model that takes into account the at which the individuals started consuming the beverage instead of the day of study.
+
+```{r}
+model2 <- lme4::glmer(Value ~ bev + (1|id),
+                     na.action = na.omit,
+                     family = binomial(link = "logit"),
+                     data = daily_alc)
+
+summary(model)
+```
+
+We can see that there is a statistically significant increase in the chances of not consuming alcohol when the individuals are on beverage. Now let's check if there is some additive effect between day and beverage condition.
+
+```{r}
+model3 <- lme4::glmer(Value ~ day + bev + (1|id),
+                     na.action = na.omit,
+                     family = binomial(link = "logit"),
+                     data = daily_alc)
+
+summary(model)
+```
+***
+When considering both fixed effects, the model fails to catch any variability. Let's try with a intercation term between day of study and beverage condition:
+
+```{r}
+model3 <- lme4::glmer(Value ~ day:bev + (1|id),
+                     na.action = na.omit,
+                     family = binomial(link = "logit"),
+                     data = daily_alc)
+
+summary(model)
+```
 
