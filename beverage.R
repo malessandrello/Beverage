@@ -9,14 +9,31 @@ library(logitr)
 data <- read_csv("Study Data.csv") %>% 
   rename(id = `Participant ID`, day = `Study Day`)
 
-
-
 daily_alc <- data %>% 
   drop_na() %>% 
   filter(`Question Name` == "daily_alc") %>% 
-  mutate(Value = ifelse(Value == 2, 1, 0)) %>% 
-group_by(id, Battery) %>%
-  summarise(Value = mean(Value)) 
+  mutate(Value = as_factor(ifelse(Value == 2, 1, 0)),
+         bev = as.factor(ifelse(Battery == "Beverage Daily", 1, 0)))
+
+fit <- lme4::glmer(Value ~ day + day*bev + (1|id),
+                   data = daily_alc,
+                   family = binomial(link = "logit"))
+
+summary(fit)
+
+test_set <- with(daily_alc, tibble(day = c(1:6, 8:13, 15:20)))
+
+predict(fit, newdata = test_set, type = "response", re.form = NA)
+
+fit2<- lme4::glmer(Value ~ bev + (1|id),
+                   data = daily_alc,
+                   family = binomial(link = "logit"))
+
+test_set2 <- with(daily_alc, tibble(bev = as_factor(c(0,0,0,0,1)))) 
+
+predict(fit2, newdata = test_set2, type = "response", re.form = NA)
+
+
 
 daily_alc <- data %>% 
   drop_na() %>% 
@@ -89,3 +106,4 @@ daily_alc_bev <- data %>%
 x <- predict(model, type = "response")[1:21]
 
 f <- tibble(day = c(1:21), x)
+
