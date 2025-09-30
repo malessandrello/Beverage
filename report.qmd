@@ -149,6 +149,8 @@ prediction %>%
   geom_curve(aes(x = 12, y = 0.911, xend = 7, yend = 0.93),
               arrow = arrow(length = unit(0.25, "cm"), ends = "last", type = "open"))
 
+
+
 ```
 
 
