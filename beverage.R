@@ -22,7 +22,8 @@ daily_alc <- data %>%
   drop_na() %>% 
   filter(`Question Name` == "daily_alc") %>% 
   group_by(`Participant ID`, Battery) %>%
-  summarise(Value = mean(Value))
+  summarise(Value = mean(Value)) %>% 
+  rename(ID = `Participant ID`)
 
 daily_alc %>% 
   ggplot(aes(Battery, Value))+
@@ -35,7 +36,10 @@ daily_alc_w <- daily_alc %>%
 
 t.test(daily_alc_w$`Beverage Daily`, daily_alc_w$`Pre Beverage Daily`)
 
-
+model <- lmerTest::lmer(Value ~ Battery + (1|ID),
+                    na.action = na.omit,
+                    REML = TRUE,
+                    data = daily_alc)
 
 mean(is.na(data))
 
