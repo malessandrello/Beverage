@@ -138,7 +138,7 @@ background: #00524e;
 </section>
 <section id="exploratory-data-analysis" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="exploratory-data-analysis">Exploratory Data Analysis</h2>
-<p>In this section I load and explore the dataset.</p>
+<p>In this section, I load and explore the dataset.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
@@ -235,11 +235,43 @@ background: #00524e;
 </div>
 </div>
 </div>
-<p>Let’s examine the initial proportion</p>
+<p>Do this increase in the proportion of no alcohol consumers has something to do with the consumption of the beverage? If so, we should see an increase in the chances of not drinking alcohol from the day on which the beverage is consumed. To do that, we will use a generalized mixed effects linear model because it is best adapted when the outcome we want to predict is binary.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(daily_alc<span class="sc">$</span>Value <span class="sc">==</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">glmer</span>(Value <span class="sc">~</span> <span class="st">`</span><span class="at">Study Day</span><span class="st">`</span> <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>id),</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">na.action =</span> na.omit,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> daily_alc)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.18</code></pre>
+<pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: Value ~ `Study Day` + (1 | id)
+   Data: daily_alc
+
+     AIC      BIC   logLik deviance df.resid 
+    1729     1746     -861     1723     2260 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-4.879  0.128  0.176  0.405  1.859 
+
+Random effects:
+ Groups Name        Variance Std.Dev.
+ id     (Intercept) 3.59     1.9     
+Number of obs: 2263, groups:  id, 142
+
+Fixed effects:
+            Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)   1.9598     0.2290    8.56  &lt; 2e-16 ***
+`Study Day`   0.0465     0.0113    4.12  3.8e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr)
+`Study Day` -0.431</code></pre>
 </div>
 </div>
 </section>

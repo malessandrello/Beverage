@@ -17,7 +17,7 @@ This document is a data analysis and modeling report of the Beverage study.
 
 ## Exploratory Data Analysis
 
-In this section I load and explore the dataset. 
+In this section, I load and explore the dataset. 
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -28,10 +28,11 @@ library(ggpubr)
 library(lme4)
 library(lmerTest)
 library(knitr)
+
 options(digits = 2)
 
 data <- read_csv("Study Data.csv") %>% 
-  rename(id = `Participant ID`)
+  rename(id = `Participant ID`, day = `Study Day`)
 
 head(data)
 
@@ -73,9 +74,17 @@ daily_alc %>%
 
 ```
 
-Let's examine the initial proportion 
+Do this increase in the proportion of no alcohol consumers has something to do with the consumption of the beverage? If so, we should see an increase in the chances of not drinking alcohol from the day on which the beverage is consumed. To do that, we will use a generalized mixed effects linear model because it is best adapted when the outcome we want to predict is binary.
 
 ```{r}
-mean(daily_alc$Value == 0)
+
+
+model <- lme4::glmer(Value ~ day + (1|id),
+                     na.action = na.omit,
+                     family = binomial(link = "logit"),
+                     data = daily_alc)
+
+summary(model)
 ```
 
+We can see from the random effects that there is variability in the baseline acounting for individual variability and that there is an increase  
