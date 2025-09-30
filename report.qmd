@@ -73,8 +73,12 @@ daily_alc %>%
   theme(axis.title.x = element_blank())
 
 ```
+***
+
+## Modeling
 
 Do this increase in the proportion of no alcohol consumers has something to do with the consumption of the beverage? If so, we should see an increase in the chances of not drinking alcohol from the day on which the beverage is consumed. To do that, we will use a generalized mixed effects linear model because it is best adapted when the outcome we want to predict is binary.
+
 
 ```{r}
 
@@ -85,6 +89,10 @@ model <- lme4::glmer(Value ~ day + (1|id),
                      data = daily_alc)
 
 summary(model)
-```
 
-We can see from the random effects that there is variability in the baseline acounting for individual variability and that there is an increase  
+predict(model)[1:21]
+```
+***
+
+We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol.  
+

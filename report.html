@@ -121,6 +121,7 @@ background: #00524e;
   <ul>
   <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
   <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis">Exploratory Data Analysis</a></li>
+  <li><a href="#modeling" id="toc-modeling" class="nav-link" data-scroll-target="#modeling">Modeling</a></li>
   </ul>
 </nav>
 </div>
@@ -147,22 +148,23 @@ background: #00524e;
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Study Data.csv"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> <span class="st">`</span><span class="at">Participant ID</span><span class="st">`</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Study Data.csv"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> <span class="st">`</span><span class="at">Participant ID</span><span class="st">`</span>, <span class="at">day =</span> <span class="st">`</span><span class="at">Study Day</span><span class="st">`</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 6
-     id `Study Day` Battery             `Question Name`   Value Text            
-  &lt;dbl&gt;       &lt;dbl&gt; &lt;chr&gt;               &lt;chr&gt;             &lt;dbl&gt; &lt;chr&gt;           
-1    13           0 Beverage Enrollment birth_year           35 1973            
-2    13           0 Beverage Enrollment Enrollment_Gender     2 Female          
-3    13           0 Beverage Enrollment who_1                 4 Most of the time
-4    13           0 Beverage Enrollment who_2                 4 Most of the time
-5    13           0 Beverage Enrollment who_3                 4 Most of the time
-6    13           0 Beverage Enrollment who_4                 4 Most of the time</code></pre>
+     id   day Battery             `Question Name`   Value Text            
+  &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;               &lt;chr&gt;             &lt;dbl&gt; &lt;chr&gt;           
+1    13     0 Beverage Enrollment birth_year           35 1973            
+2    13     0 Beverage Enrollment Enrollment_Gender     2 Female          
+3    13     0 Beverage Enrollment who_1                 4 Most of the time
+4    13     0 Beverage Enrollment who_2                 4 Most of the time
+5    13     0 Beverage Enrollment who_3                 4 Most of the time
+6    13     0 Beverage Enrollment who_4                 4 Most of the time</code></pre>
 </div>
 </div>
 <hr>
@@ -235,9 +237,13 @@ background: #00524e;
 </div>
 </div>
 </div>
+<hr>
+</section>
+<section id="modeling" class="level2">
+<h2 class="anchored" data-anchor-id="modeling">Modeling</h2>
 <p>Do this increase in the proportion of no alcohol consumers has something to do with the consumption of the beverage? If so, we should see an increase in the chances of not drinking alcohol from the day on which the beverage is consumed. To do that, we will use a generalized mixed effects linear model because it is best adapted when the outcome we want to predict is binary.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">glmer</span>(Value <span class="sc">~</span> <span class="st">`</span><span class="at">Study Day</span><span class="st">`</span> <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>id),</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">glmer</span>(Value <span class="sc">~</span> day <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>id),</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">na.action =</span> na.omit,</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>),</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> daily_alc)</span>
@@ -247,7 +253,7 @@ background: #00524e;
 <pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
   Approximation) [glmerMod]
  Family: binomial  ( logit )
-Formula: Value ~ `Study Day` + (1 | id)
+Formula: Value ~ day + (1 | id)
    Data: daily_alc
 
      AIC      BIC   logLik deviance df.resid 
@@ -265,15 +271,24 @@ Number of obs: 2263, groups:  id, 142
 Fixed effects:
             Estimate Std. Error z value Pr(&gt;|z|)    
 (Intercept)   1.9598     0.2290    8.56  &lt; 2e-16 ***
-`Study Day`   0.0465     0.0113    4.12  3.8e-05 ***
+day           0.0465     0.0113    4.12  3.8e-05 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
-            (Intr)
-`Study Day` -0.431</code></pre>
+    (Intr)
+day -0.431</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">predict</span>(model)[<span class="dv">1</span><span class="sc">:</span><span class="dv">21</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+0.93 0.98 1.03 1.07 1.12 1.16 1.26 1.30 1.35 1.40 1.44 1.49 1.58 1.63 1.68 1.72 
+  17   18   19   20   21 
+1.77 1.82 3.25 3.30 3.34 </code></pre>
 </div>
 </div>
+<hr>
+<p>We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol.</p>
 </section>
 
 </main>

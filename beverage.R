@@ -84,3 +84,8 @@ daily_alc_bev <- data %>%
   drop_na() %>% 
   filter(`Question Name` == "daily_alc" & Battery == "Beverage Daily") %>% 
   mutate(Value = ifelse(Value == 2, 1, 0))
+
+
+x <- predict(model, type = "response")[1:21]
+
+f <- tibble(day = c(1:21), x)
