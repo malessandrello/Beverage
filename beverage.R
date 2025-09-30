@@ -13,7 +13,7 @@ daily_alc <- data %>%
   drop_na() %>% 
   filter(`Question Name` == "daily_alc") %>% 
   mutate(Value = ifelse(Value == 2, 1, 0),
-         bev = as.factor(ifelse(Battery == "Beverage Daily", 1, 0)))
+         bev = as.factor(ifelse(Battery == "Beverage Daily", 2, 1)))
 
 fit <- lme4::glmer(as_factor(Value) ~ day + day*bev + (1|id),
                    data = daily_alc,

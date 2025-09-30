@@ -113,7 +113,7 @@ summary(model2)
 ***
 This model catches a effect produced by the beverage condition that is statistically significant. The interaction term has a lower level of significance
 
-When we compare both models, the model 2 perfomrs slightly better in the AIC metric and R2 than model 1.
+When we compare both models, the model 2 performs slightly better in the AIC metric and R2 than model 1.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -121,7 +121,9 @@ compare_performance(model1, model2)
 
 ```
 
-## Prediction
+## Prediction of Probability of not consuming alcohol during the study
+
+In this section, we will predict the probability of not consuming alcohol during the time of the study (0 to 21 days).
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -135,9 +137,20 @@ test_set <- with(daily_alc, tibble(day = c(0:21), bev = as_factor(c(0,0,0,0,0,0,
 
 predicted <- predict(model2, newdata = test_set, type = "response", re.form = NA)
 
+prediction <- tibble("Predicted values" = predicted, days = c(0:21))
 
+prediction %>% 
+  ggplot(aes(days, `Predicted values`))+
+  geom_point()+
+  xlab("Days")+
+  ylab("Predicted Probabilty of not consuming alcohol")+
+  theme_minimal()+
+  annotate(geom = "text", x = 15, y = 0.91, label = "Beverage consumption starts here")+
+  geom_curve(aes(x = 12, y = 0.911, xend = 7, yend = 0.93),
+              arrow = arrow(length = unit(0.25, "cm"), ends = "last", type = "open"))
 
 ```
+
 
 
 
