@@ -44,6 +44,8 @@ model2 <- lme4::glmer(Value ~ `Study Day` + (1|id),
                      family = binomial(link = "logit"),
                      data = daily_alc)
 
+summary(model2)
+
 mean(is.na(data))
 
 
@@ -63,3 +65,9 @@ get_summary_stats(data = a, Value)
 
 
          
+daily_alc <- data %>% 
+  drop_na() %>% 
+  filter(`Question Name` == "daily_alc") %>% 
+  mutate(Value = ifelse(Value == 2, 0, 1),
+         bev = ifelse(Battery == "Pre Beverage Daily", 0, 1))
+

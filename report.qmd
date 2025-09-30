@@ -42,7 +42,7 @@ head(data)
 Let's analyze the question of alcohol consumption before and while consuming the product.
 
 ```{r message=FALSE, warning=FALSE}
-
+# 1 and 0 instead of 2 and 1 for "no" and "yes" answers respectively
 daily_alc <- data %>% 
   drop_na() %>% 
   filter(`Question Name` == "daily_alc") %>% 
@@ -57,7 +57,7 @@ kable(daily_alc_stats)
 
 ```
 
-We can see that there is an increase of 6% in the proportion of individuals that do not consume alcohol while consuming the beverage. Confidence intervals of both groups don't overlap, indicating statistical significance. This can also be seen graphically:
+The proportion of individuals that don't consume alcohol during beverage is 6% higher than the proportion of individuals that don't consume alcohol pre beverage. 
 
 ```{r message=FALSE, warning=FALSE, fig.cap= "Probability of not consuming alcohol previous to and during the consumption of the beverage. p-values were obtained with a t-test."}
 
