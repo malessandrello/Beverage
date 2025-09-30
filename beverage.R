@@ -1,5 +1,9 @@
 library(tidyverse)
 library(readr)
+library(rstatix)
+library(ggpubr)
+library(lme4)
+library(lmerTest)
 
 data <- read_csv("Study Data.csv")
 
@@ -22,11 +26,27 @@ daily_alc <- data %>%
 
 daily_alc %>% 
   ggplot(aes(Battery, Value))+
-  geom_boxplot()
+  geom_boxplot()+
+  geom_pwc(method = "t_test")
+
 
 daily_alc_w <- daily_alc %>% 
   pivot_wider(names_from = Battery, values_from = Value)
 
 t.test(daily_alc_w$`Beverage Daily`, daily_alc_w$`Pre Beverage Daily`)
 
+
+
 mean(is.na(data))
+
+
+who <- data %>% 
+  drop_na() %>% 
+  filter(str_detect(`Question Name`, "who")) %>% 
+  group_by(`Participant ID`, `Study Day`) %>% 
+  summarise(Value = sum(Value)*4)
+
+
+
+
+         
