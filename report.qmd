@@ -1,0 +1,81 @@
+---
+title: "Data analysis and modeling - Beverage study"
+author: "Mauricio Alessandrello"
+fig-cap-location: margin
+format: 
+  html:
+    toc: TRUE
+    toc-location: left
+    cap-location: bottom
+title-block-banner: "#00524e"
+title-block-banner-color: "white"
+---
+
+## Summary
+
+This document is a data analysis and modeling report of the Beverage study.
+
+## Exploratory Data Analysis
+
+In this section I load and explore the dataset. 
+
+```{r, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(readr)
+library(rstatix)
+library(ggpubr)
+library(lme4)
+library(lmerTest)
+library(knitr)
+options(digits = 2)
+
+data <- read_csv("Study Data.csv") %>% 
+  rename(id = `Participant ID`)
+
+head(data)
+
+
+```
+***
+
+Let's analyze the question of alcohol consumption before and while consuming the product.
+
+```{r message=FALSE, warning=FALSE}
+
+daily_alc <- data %>% 
+  drop_na() %>% 
+  filter(`Question Name` == "daily_alc") %>% 
+  mutate(Value = ifelse(Value == 2, 1, 0))
+
+daily_alc_stats <- daily_alc %>% 
+  group_by(Battery) %>% 
+  get_summary_stats(Value, show = c("n", "mean", "sd", "se", "ci"))
+
+kable(daily_alc_stats)
+
+
+```
+
+We can see that there is an increase of 6% in the proportion of individuals that do not consume alcohol while consuming the beverage. Confidence intervals of both groups don't overlap, indicating statistical significance. This can also be seen graphically:
+
+```{r message=FALSE, warning=FALSE, fig.cap= "Probability of not consuming alcohol previous to and during the consumption of the beverage. p-values were obtained with a t-test."}
+
+daily_alc %>% 
+  group_by(id, Battery) %>% 
+  summarise(Value = mean(Value)) %>% 
+  ggplot(aes(Battery, Value))+
+  geom_boxplot()+
+  geom_pwc(method = "t_test")+
+  theme_minimal()+
+  ylab("Probability of NOT consuming alcohol")+
+  theme(axis.title.x = element_blank())
+
+```
+
+Let's examine the initial proportion 
+
+```{r}
+mean(daily_alc$Value == 0)
+```
+

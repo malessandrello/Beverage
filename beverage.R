@@ -5,25 +5,23 @@ library(ggpubr)
 library(lme4)
 library(lmerTest)
 
-data <- read_csv("Study Data.csv")
+data <- read_csv("Study Data.csv") %>% 
+  rename(id = `Participant ID`)
 
-data %>% 
-  filter(`Question Name` == "daily_alc" & `Participant ID` == 13)
-  
-
-data %>% 
-  filter(`Question Name` == "week_alc_use" & `Participant ID` == 13)
-
-data %>% 
-  filter(str_detect(`Question Name`, "who") & `Participant ID` == 13)
 
 
 daily_alc <- data %>% 
   drop_na() %>% 
   filter(`Question Name` == "daily_alc") %>% 
-  group_by(`Participant ID`, Battery) %>%
-  summarise(Value = mean(Value)) %>% 
-  rename(ID = `Participant ID`)
+  mutate(Value = ifelse(Value == 2, 1, 0)) %>% 
+group_by(id, Battery) %>%
+  summarise(Value = mean(Value)) 
+
+daily_alc <- data %>% 
+  drop_na() %>% 
+  filter(`Question Name` == "daily_alc") %>% 
+  mutate(Value = ifelse(Value == 2, 1, 0))
+
 
 daily_alc %>% 
   ggplot(aes(Battery, Value))+
@@ -36,10 +34,15 @@ daily_alc_w <- daily_alc %>%
 
 t.test(daily_alc_w$`Beverage Daily`, daily_alc_w$`Pre Beverage Daily`)
 
-model <- lmerTest::lmer(Value ~ Battery + (1|ID),
+model <- lmerTest::lmer(Value ~ Battery + (1|id),
                     na.action = na.omit,
                     REML = TRUE,
                     data = daily_alc)
+
+model2 <- lme4::glmer(Value ~ `Study Day` + (1|id),
+                     na.action = na.omit,
+                     family = binomial(link = "logit"),
+                     data = daily_alc)
 
 mean(is.na(data))
 
@@ -47,10 +50,16 @@ mean(is.na(data))
 who <- data %>% 
   drop_na() %>% 
   filter(str_detect(`Question Name`, "who")) %>% 
-  group_by(`Participant ID`, `Study Day`) %>% 
+  group_by(id, `Study Day`, Battery) %>% 
   summarise(Value = sum(Value)*4)
 
+a <- data %>%
+  filter(`Question Name` == "daily_alc") %>% 
+  drop_na() %>% 
+  group_by(Battery) %>% 
+  get_summary_stats(Value)
 
+get_summary_stats(data = a, Value)
 
 
          

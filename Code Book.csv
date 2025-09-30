@@ -1,0 +1,177 @@
+9865,name,,who_2
+9865,question type,,Multiple Choice
+9865,instructions,,Please indicate which is closest to how you have been feeling over the last 7 days: I have felt calm and relaxed
+9865,min selections,1,
+9865,max selections,1,
+9865,option,5,All the time
+9865,option,4,Most of the time
+9865,option,3,More than half of the time
+9865,option,2,Less than half of the time
+9865,option,1,Some of the time
+9865,option,0,At no time
+9874,name,,who_1
+9874,question type,,Multiple Choice
+9874,instructions,,Please indicate which is closest to how you have been feeling over the last 7 days: I have felt cheerful and in good spirits
+9874,min selections,1,
+9874,max selections,1,
+9874,option,5,All the time
+9874,option,4,Most of the time
+9874,option,3,More than half of the time
+9874,option,2,Less than half of the time
+9874,option,1,Some of the time
+9874,option,0,At no time
+9875,name,,who_4
+9875,question type,,Multiple Choice
+9875,instructions,,Please indicate which is closest to how you have been feeling over the last 7 days: I woke up feeling fresh and rested
+9875,min selections,1,
+9875,max selections,1,
+9875,option,5,All the time
+9875,option,4,Most of the time
+9875,option,3,More than half of the time
+9875,option,2,Less than half of the time
+9875,option,1,Some of the time
+9875,option,0,At no time
+9876,name,,who_5
+9876,question type,,Multiple Choice
+9876,instructions,,Please indicate which is closest to how you have been feeling over the last 7 days: My daily life has been filled with things that interest me
+9876,min selections,1,
+9876,max selections,1,
+9876,option,5,All the time
+9876,option,4,Most of the time
+9876,option,3,More than half of the time
+9876,option,2,Less than half of the time
+9876,option,1,Some of the time
+9876,option,0,At no time
+9877,name,,who_3
+9877,question type,,Multiple Choice
+9877,instructions,,Please indicate which is closest to how you have been feeling over the last 7 days: I have felt active and vigorous
+9877,min selections,1,
+9877,max selections,1,
+9877,option,5,All the time
+9877,option,4,Most of the time
+9877,option,3,More than half of the time
+9877,option,2,Less than half of the time
+9877,option,1,Some of the time
+9877,option,0,At no time
+9884,name,,birth_year
+9884,question type,,Selection
+9884,instructions,,What year were you born?
+9884,option,1,2007
+9884,option,2,2006
+9884,option,3,2005
+9884,option,4,2004
+9884,option,5,2003
+9884,option,6,2002
+9884,option,7,2001
+9884,option,8,2000
+9884,option,9,1999
+9884,option,10,1998
+9884,option,11,1997
+9884,option,12,1996
+9884,option,13,1995
+9884,option,14,1994
+9884,option,15,1993
+9884,option,16,1992
+9884,option,17,1991
+9884,option,18,1990
+9884,option,19,1989
+9884,option,20,1988
+9884,option,21,1987
+9884,option,22,1986
+9884,option,23,1985
+9884,option,24,1984
+9884,option,25,1983
+9884,option,26,1982
+9884,option,27,1981
+9884,option,28,1980
+9884,option,29,1979
+9884,option,30,1978
+9884,option,31,1977
+9884,option,32,1976
+9884,option,33,1975
+9884,option,34,1974
+9884,option,35,1973
+9884,option,36,1972
+9884,option,37,1971
+9884,option,38,1970
+9884,option,39,1969
+9884,option,40,1968
+9884,option,41,1967
+9884,option,42,1965
+9884,option,43,1964
+9884,option,44,1963
+9884,option,45,1962
+9884,option,46,1961
+9884,option,47,1960
+9884,option,48,1959
+9884,option,49,1958
+9884,option,50,1957
+9884,option,51,1956
+9884,option,52,1955
+9884,option,53,1954
+9884,option,54,1953
+9884,option,55,1952
+9884,option,56,1951
+9884,option,57,1950
+9884,option,58,1949
+9884,option,59,1948
+9884,option,60,1947
+9884,option,61,1946
+9884,option,62,1945
+9884,option,63,1944
+9884,option,64,1943
+9884,option,65,1942
+9884,option,66,1941
+9884,option,67,1940
+9884,option,68,1939
+9884,option,69,1938
+9884,option,70,1937
+9884,option,71,1936
+9884,option,72,1935
+9884,option,73,1934
+9884,option,74,1933
+9884,option,75,1932
+9884,option,76,1931
+9884,option,77,1930
+9885,name,,Enrollment_Gender
+9885,question type,,Multiple Choice
+9885,instructions,,What gender do you identify with?
+9885,min selections,1,
+9885,max selections,1,
+9885,option,1,Male
+9885,option,2,Female
+9885,option,3,Prefer not to identify
+9885,option,4,Gender Fluid or Other
+9942,name,,daily_alc
+9942,question type,,Multiple Choice
+9942,instructions,,Did you consume any alcohol yesterday?
+9942,min selections,1,
+9942,max selections,1,
+9942,option,1,Yes
+9942,option,2,No
+9965,name,,final_other_setting
+9965,question type,,Text
+9965,instructions,,What other setting(s) or situation(s)?
+9992,name,,week_alc_use
+9992,question type,,Multiple Choice
+9992,instructions,,How often have you consumed {{product_name}} instead of an alcohol beverage in the past week?
+9992,min selections,1,
+9992,max selections,1,
+9992,option,0,None
+9992,option,1,Once
+9992,option,2,Twice
+9992,option,3,Three times
+9992,option,4,Four or more times
+9993,name,,week_alc_setting
+9993,question type,,Multiple Choice
+9993,instructions,,In what setting did you choose {{product_name}} over an alcohol beverage?
+9993,min selections,1,
+9993,max selections,8,
+9993,option,1,End of the day to relax
+9993,option,2,"At home, with a meal/food"
+9993,option,3,At a bar or restaurant
+9993,option,4,In a social setting / at a social event
+9993,option,5,While watching sports
+9993,option,6,While doing outdoor activities
+9993,option,7,Alone
+9993,option,8,Other
