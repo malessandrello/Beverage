@@ -15,7 +15,8 @@ title-block-banner-color: "white"
 
 This document is a data analysis and modeling report of the Beverage study.
 
-## Exploratory Data Analysis
+
+## Exploratory Data Analysis 
 
 In this section, I load and explore the dataset. 
 
@@ -28,6 +29,7 @@ library(ggpubr)
 library(lme4)
 library(lmerTest)
 library(knitr)
+library(performance)
 
 options(digits = 2)
 
@@ -39,6 +41,8 @@ head(data)
 
 ```
 ***
+
+## Alcohol consumption during and pre-beverage consumption
 
 Let's analyze the question of alcohol consumption before and while consuming the product.
 
@@ -109,12 +113,31 @@ summary(model2)
 ***
 This model catches a effect produced by the beverage condition that is statistically significant. The interaction term has a lower level of significance
 
-When we compare both models, the model 2 perfomrs slightly better than model 1
+When we compare both models, the model 2 perfomrs slightly better in the AIC metric and R2 than model 1.
 
 ```{r message=FALSE, warning=FALSE}
 
+compare_performance(model1, model2)
+
 ```
 
+## Prediction
+
+```{r message=FALSE, warning=FALSE}
+
+#set with 0 to 21 days
+
+test_set <- with(daily_alc, tibble(day = c(0:21), bev = as_factor(c(0,0,0,0,0,0,0,
+                                                                                1,1,1,1,1,1,
+                                                                                1,1,1,1,1,1,1,
+                                                                    1,1))))
+
+
+predicted <- predict(model2, newdata = test_set, type = "response", re.form = NA)
+
+
+
+```
 
 
 

@@ -12,18 +12,26 @@ data <- read_csv("Study Data.csv") %>%
 daily_alc <- data %>% 
   drop_na() %>% 
   filter(`Question Name` == "daily_alc") %>% 
-  mutate(Value = as_factor(ifelse(Value == 2, 1, 0)),
+  mutate(Value = ifelse(Value == 2, 1, 0),
          bev = as.factor(ifelse(Battery == "Beverage Daily", 1, 0)))
 
-fit <- lme4::glmer(Value ~ day + day*bev + (1|id),
+fit <- lme4::glmer(as_factor(Value) ~ day + day*bev + (1|id),
                    data = daily_alc,
                    family = binomial(link = "logit"))
 
 summary(fit)
 
-test_set <- with(daily_alc, tibble(day = c(1:6, 8:13, 15:20)))
+test_set <- with(daily_alc, tibble(day = c(1:6, 8:13, 15:20), bev = as_factor(c(0,0,0,0,0,0,
+                                                                      1,1,1,1,1,1,
+                                                                      1,1,1,1,1,1))))
 
-predict(fit, newdata = test_set, type = "response", re.form = NA)
+test_set <- with(daily_alc, tibble(day = c(0:21), bev = as_factor(c(0,0,0,0,0,0,0,
+                                                                                1,1,1,1,1,1,
+                                                                                1,1,1,1,1,1,1,
+                                                                    1,1))))
+
+
+predicted <- predict(fit, newdata = test_set, type = "response", re.form = NA)
 
 fit2<- lme4::glmer(Value ~ bev + (1|id),
                    data = daily_alc,

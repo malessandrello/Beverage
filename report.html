@@ -150,13 +150,14 @@ background: #00524e;
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmerTest)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Study Data.csv"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> <span class="st">`</span><span class="at">Participant ID</span><span class="st">`</span>, <span class="at">day =</span> <span class="st">`</span><span class="at">Study Day</span><span class="st">`</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(performance)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">digits =</span> <span class="dv">2</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Study Data.csv"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> <span class="st">`</span><span class="at">Participant ID</span><span class="st">`</span>, <span class="at">day =</span> <span class="st">`</span><span class="at">Study Day</span><span class="st">`</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 6
      id   day Battery             `Question Name`   Value Text            
@@ -247,12 +248,12 @@ background: #00524e;
 <h2 class="anchored" data-anchor-id="modeling">Modeling</h2>
 <p>Do this increase in the proportion of no alcohol consumers has something to do with the consumption of the beverage? If so, we should see an increase in the chances of not drinking alcohol from the day on which the beverage is consumed. To do that, we will use a generalized mixed effects linear model because it is best adapted when the outcome we want to predict is binary.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">glmer</span>(<span class="fu">factor</span>(Value) <span class="sc">~</span> day <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>id),</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">glmer</span>(<span class="fu">factor</span>(Value) <span class="sc">~</span> day <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>id),</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">na.action =</span> na.omit,</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"logit"</span>),</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">data =</span> daily_alc)</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
   Approximation) [glmerMod]
@@ -329,6 +330,24 @@ day:bev1  0.639 -0.941 -0.761</code></pre>
 </div>
 </div>
 <hr>
+<p>This model catches a effect produced by the beverage condition that is statistically significant. The interaction term has a lower level of significance</p>
+<p>When we compare both models, the model 2 perfomrs slightly better in the AIC metric and R2 than model 1.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compare_performance</span>(model1, model2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Comparison of Model Performance Indices
+
+Name   |    Model |  AIC (weights) | AICc (weights) |  BIC (weights)
+--------------------------------------------------------------------
+model1 | glmerMod | 1728.6 (0.365) | 1728.6 (0.367) | 1745.8 (0.994)
+model2 | glmerMod | 1727.5 (0.635) | 1727.5 (0.633) | 1756.1 (0.006)
+
+Name   | R2 (cond.) | R2 (marg.) |   ICC |  RMSE | Sigma | Log_loss | Score_log | Score_spherical
+-------------------------------------------------------------------------------------------------
+model1 |      0.527 |      0.011 | 0.522 | 0.314 |     1 |    0.308 |      -Inf |       4.436e-04
+model2 |      0.531 |      0.013 | 0.525 | 0.313 |     1 |    0.307 |      -Inf |       4.419e-04</code></pre>
+</div>
+</div>
 </section>
 
 </main>
