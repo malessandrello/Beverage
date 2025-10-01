@@ -49,7 +49,9 @@ head(data)
 Let's analyze the question of alcohol consumption before and while consuming the product.
 
 ```{r message=FALSE, warning=FALSE}
-# 1 and 0 instead of 2 and 1 for "no" and "yes" answers respectively
+#Chane 1 and 0 instead of 2 and 1 for "no" and "yes" answers respectively,
+# bev is the Battery, coded 1 for Beverage Daily and 0 otherwise.
+
 daily_alc <- data %>%
   drop_na() %>%
   filter(question == "daily_alc") %>%
@@ -80,7 +82,7 @@ In the next plot, the proportion of "no" answers per individual is depicted.
 
 daily_alc %>%
   group_by(id, Battery) %>%
-  summarise(Value = mean(Value)) %>%
+  mutate(Value = mean(Value)) %>%
   ggplot(aes(Battery, Value)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.2) +
@@ -221,3 +223,65 @@ anyDuplicated(data_dup)
 
 ```
 
+We see that there are no duplicated rows, indicating that there are no replicate questions. Let's continue exploring the dataset.
+
+```{r, message=FALSE, warning=FALSE}
+
+data_who <- data %>% 
+  filter(str_detect(question, "who")) %>% 
+  drop_na()
+
+head(data_who)
+
+#Calculating the who-score for every id to obtain a single row for week.
+
+data_who_calc <- data_who %>% 
+  group_by(id, day) %>% 
+  mutate(Value = sum(Value)*4) %>% 
+  select(-question, -Text) 
+
+data_who_calc <- data_who_calc[!duplicated(data_who_calc),]
+
+
+
+data_who_stats <-  data_who_calc %>% 
+  group_by(day) %>% 
+get_summary_stats(Value)
+
+kable(data_who_stats)
+
+```
+***
+Evaluating the means and the confidence interavals, we can say that there is no statistically singnificant increase in the who-score. Let's evaluate this with a t-test:
+
+```{r, message=FALSE, warning=FALSE}
+# Convert the dataframe to a wide format to obtain one row per id:
+
+data_who_wide <- data_who_calc %>% 
+  select(-Battery) %>% 
+  pivot_wider(names_from = day, values_from = Value) %>% 
+  drop_na()
+
+t.test(data_who_wide$`0`, data_who_wide$`21`)
+
+```
+***
+Statistically, there is no significant difference between the who-score at the beginning of the study and the final one. However WHO indicates that a 10% difference is indicative of significant difference. Let's calculate that difference:
+
+```{r, message=FALSE, warning=FALSE}
+
+who_score_dif <- tibble(id = data_who_wide$id,
+       "1" = data_who_wide$`7` - data_who_wide$`0`,
+       "2" = data_who_wide$`14` - data_who_wide$`7`,
+       "3" = data_who_wide$`21` - data_who_wide$`14`,
+       "total" = data_who_wide$`21` - data_who_wide$`0`)
+
+who_score_dif_weekly <- who_score_dif %>%
+  select(-total) %>% 
+  pivot_longer(cols = 2:4, names_to = "week", values_to = "Value") %>% 
+  mutate(week = as.numeric(week))
+
+who_score_dif_total <- who_score_dif %>% 
+  select(id, total)
+
+```
