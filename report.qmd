@@ -11,10 +11,11 @@ title-block-banner: "#00524e"
 title-block-banner-color: "white"
 ---
 
-## Summary
+# Summary
 
 This document is a data analysis and modeling report of the Beverage study.
 
+# Alcohol consumption during and pre-beverage consumption
 
 ## Exploratory Data Analysis 
 
@@ -27,14 +28,17 @@ library(readr)
 library(rstatix)
 library(ggpubr)
 library(lme4)
-library(lmerTest)
 library(knitr)
 library(performance)
+library(modelsummary)
+
 
 options(digits = 2)
 
-data <- read_csv("Study Data.csv") %>% 
-  rename(id = `Participant ID`, day = `Study Day`)
+data <- read_csv("Study Data.csv") %>%
+  rename(id = `Participant ID`,
+         day = `Study Day`,
+         question = `Question Name`)
 
 head(data)
 
@@ -42,20 +46,20 @@ head(data)
 ```
 ***
 
-## Alcohol consumption during and pre-beverage consumption
-
 Let's analyze the question of alcohol consumption before and while consuming the product.
 
 ```{r message=FALSE, warning=FALSE}
 # 1 and 0 instead of 2 and 1 for "no" and "yes" answers respectively
-daily_alc <- data %>% 
-  drop_na() %>% 
-  filter(`Question Name` == "daily_alc") %>% 
-  mutate(Value = ifelse(Value == 2, 1, 0),
-         bev = as_factor(ifelse(Battery == "Beverage Daily", 1, 0)))
+daily_alc <- data %>%
+  drop_na() %>%
+  filter(question == "daily_alc") %>%
+  mutate(
+    Value = ifelse(Value == 2, 1, 0),
+    bev = as_factor(ifelse(Battery == "Beverage Daily", 1, 0))
+  )
 
-daily_alc_stats <- daily_alc %>% 
-  group_by(Battery) %>% 
+daily_alc_stats <- daily_alc %>%
+  group_by(Battery) %>%
   get_summary_stats(Value, show = c("n", "mean", "sd", "se", "ci"))
 
 kable(daily_alc_stats)
@@ -63,22 +67,56 @@ kable(daily_alc_stats)
 
 ```
 ***
-The proportion of individuals that don't consume alcohol during beverage is 6% higher than the proportion of individuals that don't consume alcohol pre beverage. 
-
-```{r message=FALSE, warning=FALSE, fig.cap= "Probability of not consuming alcohol previous to and during the consumption of the beverage. p-values were obtained with a t-test."}
-
-daily_alc %>% 
-  group_by(id, Battery) %>% 
-  summarise(Value = mean(Value)) %>% 
-  ggplot(aes(Battery, Value))+
-  geom_boxplot()+
-  geom_pwc(method = "t_test")+
-  theme_minimal()+
-  ylab("Probability of NOT consuming alcohol")+
-  theme(axis.title.x = element_blank())
+The proportion of "no" ansewers during beverage is 6% higher than the proportion of "no" answers when pre beverage. The difference is statistically signifcant as showed by this t-test:
+```{r message=FALSE, warning=FALSE}
+t.test(Value ~ bev, data = daily_alc)
 
 ```
 ***
+
+In the next plot, the proportion of "no" answers per individual is depicted.
+
+```{r message=FALSE, warning=FALSE, fig.cap= "Proportion of 'no' answers per individual previous to and during the consumption of the beverage. p-values were obtained with a t-test."}
+
+daily_alc %>%
+  group_by(id, Battery) %>%
+  summarise(Value = mean(Value)) %>%
+  ggplot(aes(Battery, Value)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.2) +
+  geom_pwc(method = "t_test") +
+  theme_minimal() +
+  ylab("Proportion of 'no' answers") +
+  theme(axis.title.x = element_blank())
+
+
+
+```
+***
+```{r warning=FALSE, message=FALSE}
+# Let's do some more calculations:
+
+a <- daily_alc %>%
+  group_by(id, Battery) %>%
+  summarise(Value = mean(Value))
+
+b <- pivot_wider(a, names_from = Battery, values_from = Value)
+
+head(b)
+
+# corroborating t-test in chart:
+t.test(b$`Beverage Daily`, b$`Pre Beverage Daily`)
+
+# Let's calculate the diference in the proportion of no answers for each participant:
+c <- b$`Beverage Daily` - b$`Pre Beverage Daily`
+
+# Mean increase in the proportion of "no" answers during beverage.
+mean(c, na.rm = TRUE)
+
+
+# This confirms the values provided by the function get_summary_stats
+
+```
 
 ## Modeling
 
@@ -88,10 +126,11 @@ Do this increase in the proportion of no alcohol consumers has something to do w
 ```{r message=FALSE, warning=FALSE}
 
 
-model1 <- lme4::glmer(factor(Value) ~ day + (1|id),
-                     na.action = na.omit,
-                     family = binomial(link = "logit"),
-                     data = daily_alc)
+model1 <- lme4::glmer(factor(Value) ~ day + (1 | id),
+  na.action = na.omit,
+  family = binomial(link = "logit"),
+  data = daily_alc
+)
 
 summary(model1)
 
@@ -100,20 +139,21 @@ summary(model1)
 ```
 ***
 
-We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol. However, this model considers every day as equal, but the days when individuals are on beverage may have more weight, if the beverage is truly working. So, let's add an interaction model. 
+We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol. However, this model considers every day as equal, but the days when individuals are on beverage may have more weight, if the beverage is truly working. So, let's try with an interaction model. 
 
 ```{r, message=FALSE, warning=FALSE}
-model2 <- lme4::glmer(factor(Value) ~ day + day*bev + (1|id),
-                     na.action = na.omit,
-                     family = binomial(link = "logit"),
-                     data = daily_alc)
+model2 <- lme4::glmer(factor(Value) ~ day + day * bev + (1 | id),
+  na.action = na.omit,
+  family = binomial(link = "logit"),
+  data = daily_alc
+)
 
 summary(model2)
 ```
 ***
-This model catches a effect produced by the beverage condition that is statistically significant. The interaction term has a lower level of significance
+This model catches an effect produced by the beverage condition that is statistically significant. The interaction term has a lower level of significance.
 
-When we compare both models, the model 2 performs slightly better in the AIC metric and R2 than model 1.
+When we compare both models, the model 2 performs better in most metrics than model 1.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -125,34 +165,59 @@ compare_performance(model1, model2)
 
 In this section, we will predict the probability of not consuming alcohol during the time of the study (0 to 21 days).
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, fig.cap = "Predicted probability of not consuming alcohol during the study." }
 
 #set with 0 to 21 days
 
-test_set <- with(daily_alc, tibble(day = c(0:21), bev = as_factor(c(0,0,0,0,0,0,0,
-                                                                                1,1,1,1,1,1,
-                                                                                1,1,1,1,1,1,1,
-                                                                    1,1))))
+dataset <- with(daily_alc, tibble(day = c(0:21), bev = as_factor(c(
+  0, 0, 0, 0, 0, 0, 0,
+  1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1,
+  1, 1
+))))
 
 
-predicted <- predict(model2, newdata = test_set, type = "response", re.form = NA)
+predicted <- predict(model2, newdata = dataset, type = "response", re.form = NA)
 
 prediction <- tibble("Predicted values" = predicted, days = c(0:21))
 
-prediction %>% 
-  ggplot(aes(days, `Predicted values`))+
-  geom_point()+
-  xlab("Days")+
-  ylab("Predicted Probabilty of not consuming alcohol")+
-  theme_minimal()+
-  annotate(geom = "text", x = 15, y = 0.91, label = "Beverage consumption starts here")+
+prediction %>%
+  ggplot(aes(days, `Predicted values`)) +
+  geom_point() +
+  xlab("Days") +
+  ylab("Predicted Probabilty of not consuming alcohol") +
+  theme_minimal() +
+  annotate(geom = "text", x = 15, y = 0.91, label = "Beverage consumption starts here") +
   geom_curve(aes(x = 12, y = 0.911, xend = 7, yend = 0.93),
-              arrow = arrow(length = unit(0.25, "cm"), ends = "last", type = "open"))
-
-
+    arrow = arrow(length = unit(0.25, "cm"), ends = "last", type = "open")
+  )
 
 ```
 
+## Conclusion
+
+* The prpoportion of 'no' answers during beverage was 6% higher than in the pre beverage. This difference was statistically significant with p-value = 0.021.
+* For those during beverage, there is an increase in the odds ratio in favor of not alcohol drinking of 2.4 (p-value = 0.024). This increase is independent of day.
 
 
+
+# WHO 
+
+## Exploratory Data Analysis
+
+Brief EDA of the dataset concerning the "WHO" questions. First, let's identify the duplicate questions:
+
+```{r message=FALSE, warning=FALSE}
+#data_dup is dataframe containing all columns except the answers filtering by 
+#"who" questions. If there are duplicate questions with different answers,
+#we should see duplicated rows in this dataframe.
+
+data_dup <- data %>% 
+  filter(str_detect(question, "who")) %>% 
+  select(id, day, Battery, question) %>% 
+  drop_na()
+
+anyDuplicated(data_dup)
+
+```
 
