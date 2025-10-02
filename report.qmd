@@ -66,7 +66,7 @@ daily_alc_stats <- daily_alc %>%
   group_by(Battery) %>%
   get_summary_stats(Value, show = c("n", "mean", "sd", "se", "ci"))
 
-kable(daily_alc_stats)
+kable(daily_alc_stats, caption = "Metrics of 'no' answers during and pre beverage")
 
 
 ```
@@ -75,14 +75,13 @@ The proportion of "no" answers during beverage is 6% higher than the proportion 
 
 In the next plot, the proportion of "no" answers per individual is depicted.
 
-```{r message=FALSE, warning=FALSE, fig.cap= "Proportion of 'no' answers per individual previous to and during the consumption of the beverage.p-values were obtained by a Wilcox test."}
+```{r message=FALSE, warning=FALSE, fig.cap= "Proportion of 'no' answers per individual previous to and during the consumption of the beverage."}
 
 daily_alc %>%
   group_by(id, Battery) %>%
   summarise(Value = mean(Value)) %>%
   ggplot(aes(Battery, Value)) +
   geom_boxplot() +
-  geom_pwc(method = "wilcox_test")+
   geom_jitter(alpha = 0.2) +
   theme_minimal() +
   ylab("Proportion of 'no' answers") +
@@ -196,17 +195,17 @@ These are the predictions made by the model on the days when the question was as
 predicted <- predict(model2, newdata = tibble(day = c(1,2,3,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20), bev = factor(c(0, 0, 0, 0,0,0,1,1,1,1,1,1,1,1,1,1,1,1))), type = "response", re.form = NA)
 prediction <- tibble(Day = c(1,2,3,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20), "Predicted values" = predicted)
 
-kable(prediction, align = "l")
+kable(prediction, align = "l", caption = "Predictions of the probability of not consuming alcohol during days on which the question was asked")
 ```
 ***
-And these are the predictions on days 0, 7, 14 and 21
+And these are the predictions on days 0, 7, 14 and 21:
 
 ```{r, message=FALSE, warning=FALSE}
 
 predicted <- predict(model2, newdata = tibble(day = c(0, 7, 14, 21), bev = factor(c(0, 1, 1, 1))), type = "response", re.form = NA)
 prediction <- tibble(Day = c(0, 7, 14, 21), "Predicted values" = predicted)
 
-kable(prediction, align = "l")
+kable(prediction, align = "l", caption = "Predictions of the probability of not consuming alcohol for the days on which the question was not asked.")
 ```
 
 Let's use the model to calculate the increase in the probability of not drinking alcohol from the beginning to end of the study:
@@ -263,7 +262,7 @@ data_who_calc <- data_who %>%
 data_who_calc <- data_who_calc[!duplicated(data_who_calc),]
 
 
-# Metrics for the WHO-index bt day
+# Metrics for the WHO-index by day
 data_who_stats <-  data_who_calc %>% 
   group_by(day) %>% 
 get_summary_stats(Value, show = c("n", "mean", "ci"))
@@ -282,7 +281,7 @@ kable(data_who_stats, caption = "Metrics of the WHO-index by day")
 ***
 Evaluating the means and the confidence interavals, we can say that there is statistically significant difference in the WHO-index mean for some weeks. When we compare the change in the index and assuming that a 10% change is a significant one, we observe a significant increase of 10.4% from day 7 (when participants started using the product) to day 21. Let's see this graphically:
 
-```{r, warning=FALSE, message=FALSE, fig.cap= "WHO Well being index of participants during the study. p-values were obtained by a Wilcox test."}
+```{r, warning=FALSE, message=FALSE, fig.cap= "WHO Well being index of participants during the study."}
 
 data_who_calc %>%
   mutate("Beverage Consumption" = ifelse(day > 7, "Yes", "No"),
@@ -290,7 +289,6 @@ data_who_calc %>%
   ggplot(aes(day, Value, fill = `Beverage Consumption`))+
   geom_boxplot()+
   geom_jitter(alpha = 0.2)+
-  geom_pwc(method = "wilcox_test")+
   ylab("WHO Well Being Index (%)")+
   theme_minimal()
   
@@ -303,7 +301,7 @@ Now, let's see the change in the index by week:
 
 
 
-```{r, message=FALSE, warning=FALSE, fig.cap= "Change in the WHO Well-Being Index during the study for each participant."}
+```{r, message=FALSE, warning=FALSE, fig.cap= "Change in the WHO Well-Being Index during the study for each participant. The dashed line indicates the day on which the beverage started to be consumed."}
 # Convert the dataframe to a wide format to obtain one row per id:
 
 data_who_wide <- data_who_calc %>% 
@@ -348,7 +346,6 @@ who_index_dif_weekly %>%
 ```
 ***
 
-We can see that from day 7 to 21, on average, the change in the index increases. By the week 3, the average increase from the start of the beverage consumption is significant (10.4%). 
 
 ## Modeling
 
@@ -395,7 +392,7 @@ w3 <- prediction[4] - prediction[3]
 w4 <- prediction[4] - prediction[1]
 
 #Change week by week
-kable(tibble(Week = c(1, 2, 3), Change = c(w1, w2, w3)))
+kable(tibble(Week = c(1, 2, 3), Change = c(w1, w2, w3)), caption = "Changes in the WHO-index week by week calculated using the model")
 
 #Change start to end
 w4
@@ -406,7 +403,7 @@ When comparing week by week and from start to end of the study, there is no sign
 
 Let's compare the average index change with the change of 15 random participants:
 
-```{r warning=FALSE, message=FALSE, fig.cap= "Comparison of the average change in the WHO Well-Being Index with 15 random participants. Blck solid line represents the average change."}
+```{r warning=FALSE, message=FALSE, fig.cap= "Comparison of the average change in the WHO Well-Being Index with 15 random participants. Black solid line represents the average change."}
 #Let's fit the change data into a linear model:
 
 fit <- lm(Value ~ week, data = who_index_dif_weekly)
@@ -438,7 +435,7 @@ ggplot(aes(week, Value, color = id))+
 
 ```
 
-In this sample, 67% of the participants did not show a significant index increase, while a 20% showed an increase of more than 10%. A 13% showed a significant decrease.
+
 
 ## Conclusion
 
@@ -461,7 +458,6 @@ alc_use %>%
   mutate(day = as_factor(ifelse(day == 14, "Day 14", "Day 21"))) %>% 
   ggplot(aes(day, Value))+
   geom_boxplot()+
-  geom_pwc(method = "wilcox_test")+
   theme_minimal()+
   geom_jitter(alpha = 0.2)+
   ylab("Number of substitutions")+
@@ -472,6 +468,7 @@ alc_use %>%
 There is an increase in the median at day 21.
 
 ```{r message=FALSE, warning=FALSE}
+# Let' generate the two groups
 alc_use_14 <- alc_use %>% 
   select(day, Value) %>% 
   filter(day == 14) %>% 
@@ -494,4 +491,4 @@ t.test(alc_use_21, alc_use_14, paired = TRUE)
 
 ## Conclusion
 
-* There is a statistically significant change in the number of times that alcohol is substitued by the infused beverage on day 21 compared to day 14. on day 21, alcohol was substitutde 0.53 more times than on day 14.
+* There is a statistically significant change in the number of times that alcohol is substitued by the infused beverage on day 21 compared to day 14. On day 21, alcohol was substituted 0.53 more times than on day 14.
