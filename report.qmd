@@ -75,13 +75,14 @@ The proportion of "no" answers during beverage is 6% higher than the proportion 
 
 In the next plot, the proportion of "no" answers per individual is depicted.
 
-```{r message=FALSE, warning=FALSE, fig.cap= "Proportion of 'no' answers per individual previous to and during the consumption of the beverage."}
+```{r message=FALSE, warning=FALSE, fig.cap= "Proportion of 'no' answers per individual previous to and during the consumption of the beverage.p-values were obtained by a Wilcox test"}
 
 daily_alc %>%
   group_by(id, Battery) %>%
   summarise(Value = mean(Value)) %>%
   ggplot(aes(Battery, Value)) +
   geom_boxplot() +
+  geom_pwc(method = "wilcox_test")+
   geom_jitter(alpha = 0.2) +
   theme_minimal() +
   ylab("Proportion of 'no' answers") +
@@ -158,7 +159,7 @@ compare_performance(model1, model2)
 
 In this section, we will predict the probability of not consuming alcohol during the time of the study (0 to 21 days).
 
-```{r message=FALSE, warning=FALSE, fig.cap = "Predicted probability of not consuming alcohol during the study on the days when the question was asked." }
+```{r message=FALSE, warning=FALSE, fig.cap = "Predicted probability of not consuming alcohol during the study." }
 
 #set with the 0 to 21 days
 
@@ -172,7 +173,7 @@ dataset <- with(daily_alc, tibble(day = c(0:21), bev = as_factor(c(
 
 predicted <- predict(model2, newdata = dataset, type = "response", re.form = NA)
 
-prediction <- tibble(Day = c(1:6, 8:13, 15:20), "Predicted values" = predicted)
+prediction <- tibble(Day = c(0:21), "Predicted values" = predicted)
 
 
 
@@ -183,7 +184,7 @@ prediction %>%
   ylab("Predicted Probabilty of not consuming alcohol") +
   theme_minimal() +
   annotate(geom = "text", x = 15, y = 0.91, label = "Beverage consumption starts here") +
-  geom_curve(aes(x = 12, y = 0.911, xend = 8, yend = 0.93),
+  geom_curve(aes(x = 12, y = 0.911, xend = 7, yend = 0.93),
     arrow = arrow(length = unit(0.25, "cm"), ends = "last", type = "open")
   )
 
@@ -192,31 +193,32 @@ prediction %>%
 These are the predictions made by the model on the days when the question was asked:
 
 ```{r, message=FALSE, warning=FALSE}
-kable(prediction, align = "l")
+predicted <- predict(model2, newdata = tibble(day = c(1,2,3,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20), bev = factor(c(0, 0, 0, 0,0,0,1,1,1,1,1,1,1,1,1,1,1,1))), type = "response", re.form = NA)
+prediction <- tibble(Day = c(1,2,3,4,5,6,8,9,10,11,12,13,15,16,17,18,19,20), "Predicted values" = predicted)
 
+kable(prediction, align = "l")
 ```
 ***
 And these are the predictions on days 0, 7, 14 and 21
 
 ```{r, message=FALSE, warning=FALSE}
 
-predicted <- predict(model2, newdata = tibble(day = c(0, 7, 14, 21), bev = factor(c(0, 1, 1, 1))),
-                                              type = "response", re.form = NA)
+predicted <- predict(model2, newdata = tibble(day = c(0, 7, 14, 21), bev = factor(c(0, 1, 1, 1))), type = "response", re.form = NA)
 prediction <- tibble(Day = c(0, 7, 14, 21), "Predicted values" = predicted)
 
 kable(prediction, align = "l")
 ```
 
-Let's use the model to calculate the increase in the probability of not drinjing alcohol:
+Let's use the model to calculate the increase in the probability of not drinking alcohol from the beginning to end of the study:
 
 ```{r message=FALSE, warning=FALSE}
-prediction[4] - prediction[1]
+prediction[4,]$`Predicted values` - prediction[1,]$`Predicted values`
 ```
 
 
 ## Conclusion
 
-* The prpoportion of 'no' answers during beverage was 7% higher than in the pre beverage. This difference was statistically significant with p-value = 7e-05.
+* The proportion of 'no' answers during beverage was 7% higher than in the pre beverage. This difference was statistically significant with p-value = 7e-05.
 * For those during beverage, there is an increase in the odds ratio in favor of not alcohol drinking of 2.4 (p-value = 0.024). This increase is independent of day.
 
 
@@ -280,7 +282,7 @@ kable(data_who_stats, caption = "Metrics of the WHO-index by day")
 ***
 Evaluating the means and the confidence interavals, we can say that there is statistically significant difference in the WHO-index mean for some weeks. When we compare the change in the index and assuming that a 10% change is a significant one, we observe a significant increase of 10.4% from day 7 (when participants started using the product) to day 21. Let's see this graphically:
 
-```{r, warning=FALSE, message=FALSE, fig.cap= "WHO Well being index of participants during the study. p-values were obtained by a t-test."}
+```{r, warning=FALSE, message=FALSE, fig.cap= "WHO Well being index of participants during the study. p-values were obtained by a Wilcox test."}
 
 data_who_calc %>%
   mutate("Beverage Consumption" = ifelse(day > 7, "Yes", "No"),
@@ -288,7 +290,7 @@ data_who_calc %>%
   ggplot(aes(day, Value, fill = `Beverage Consumption`))+
   geom_boxplot()+
   geom_jitter(alpha = 0.2)+
-  geom_pwc(method = "t_test")+
+  geom_pwc(method = "wilcox_test")+
   ylab("WHO Well Being Index (%)")+
   theme_minimal()
   
@@ -380,7 +382,7 @@ The value obtained is at the edge of significance. Now, let's calculate the chan
 # Let's see if there is n change increase week by week:
 prediction <- predict(model1, newdata = tibble(day = c(0,7,14,21), bev = factor(c(0, 0, 1, 1))), re.form = NA)
 # Change in the first week
-w1 <- prediction[2] - prediction[1]
+w1 <- prediction[2]- prediction[1]
 
 # Change in the second week
 w2 <- prediction[3] - prediction[2]
@@ -396,7 +398,7 @@ w4 <- prediction[4] - prediction[1]
 kable(tibble(Week = c(1, 2, 3), Change = c(w1, w2, w3)))
 
 #Change start to end
-print(w4[1])
+w4
 
 ```
 ***
@@ -459,8 +461,9 @@ alc_use %>%
   mutate(day = as_factor(ifelse(day == 14, "Day 14", "Day 21"))) %>% 
   ggplot(aes(day, Value))+
   geom_boxplot()+
+  geom_pwc(method = "wilcox_test")+
   theme_minimal()+
-  geom_jitter(alpha = 0.2)
+  geom_jitter(alpha = 0.2)+
   ylab("Number of substitutions")+
   xlab("")
 ```
