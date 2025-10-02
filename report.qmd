@@ -11,11 +11,11 @@ title-block-banner: "#00524e"
 title-block-banner-color: "white"
 ---
 
-# Summary
+## Summary
 
 This document is a data analysis and modeling report of the Beverage study.
 
-# Alcohol consumption during and pre-beverage consumption
+## Alcohol consumption during and pre-beverage consumption
 
 ## Exploratory Data Analysis 
 
@@ -30,10 +30,10 @@ library(ggpubr)
 library(lme4)
 library(knitr)
 library(performance)
-library(modelsummary)
 
 
-options(digits = 2)
+
+options(digits = 3)
 
 data <- read_csv("Study Data.csv") %>%
   rename(id = `Participant ID`,
@@ -82,7 +82,7 @@ In the next plot, the proportion of "no" answers per individual is depicted.
 
 daily_alc %>%
   group_by(id, Battery) %>%
-  mutate(Value = mean(Value)) %>%
+  summarise(Value = mean(Value)) %>%
   ggplot(aes(Battery, Value)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.2) +
@@ -141,7 +141,7 @@ summary(model1)
 ```
 ***
 
-We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol. However, this model considers every day as equal, but the days when individuals are on beverage may have more weight, if the beverage is truly working. So, let's try with an interaction model. 
+We can see from the random effects that there is variability in the baseline and that there is a statistically significant increase of 5% per day in the chances of not consuming alcohol. However, this model considers every day as equal, but, if the beverage is truly working, the days when individuals are on beverage must have more weight. So, let's try adding an interaction term. 
 
 ```{r, message=FALSE, warning=FALSE}
 model2 <- lme4::glmer(factor(Value) ~ day + day * bev + (1 | id),
@@ -162,39 +162,59 @@ When we compare both models, the model 2 performs better in most metrics than mo
 compare_performance(model1, model2)
 
 ```
-
+***
 ## Prediction of Probability of not consuming alcohol during the study
 
 In this section, we will predict the probability of not consuming alcohol during the time of the study (0 to 21 days).
 
-```{r message=FALSE, warning=FALSE, fig.cap = "Predicted probability of not consuming alcohol during the study." }
+```{r message=FALSE, warning=FALSE, fig.cap = "Predicted probability of not consuming alcohol during the study on the days when the question was asked." }
 
 #set with 0 to 21 days
 
-dataset <- with(daily_alc, tibble(day = c(0:21), bev = as_factor(c(
-  0, 0, 0, 0, 0, 0, 0,
+dataset <- with(daily_alc, tibble(day = c(1:6, 8:13, 15:20), bev = as_factor(c(
+  0, 0, 0, 0, 0, 0, 1,
   1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1,
-  1, 1
+  1, 1, 1, 1, 1
 ))))
 
 
 predicted <- predict(model2, newdata = dataset, type = "response", re.form = NA)
 
-prediction <- tibble("Predicted values" = predicted, days = c(0:21))
+prediction <- tibble(Day = c(1:6, 8:13, 15:20), "Predicted values" = predicted)
+
+
 
 prediction %>%
-  ggplot(aes(days, `Predicted values`)) +
+  ggplot(aes(Day, `Predicted values`)) +
   geom_point() +
   xlab("Days") +
   ylab("Predicted Probabilty of not consuming alcohol") +
   theme_minimal() +
   annotate(geom = "text", x = 15, y = 0.91, label = "Beverage consumption starts here") +
-  geom_curve(aes(x = 12, y = 0.911, xend = 7, yend = 0.93),
+  geom_curve(aes(x = 12, y = 0.911, xend = 8, yend = 0.93),
     arrow = arrow(length = unit(0.25, "cm"), ends = "last", type = "open")
   )
 
 ```
+***
+These are the predictions made by the model on the days when the question was asked:
+
+```{r, message=FALSE, warning=FALSE}
+kable(prediction, align = "l")
+
+```
+***
+And these are the predictions on days 0, 7, 14 and 21
+
+```{r, message=FALSE, warning=FALSE}
+
+predicted <- predict(model2, newdata = tibble(day = c(0, 7, 14, 21), bev = factor(c(0, 1, 1, 1))),
+                                              type = "response", re.form = NA)
+prediction <- tibble(Day = c(0, 7, 14, 21), "Predicted values" = predicted)
+
+kable(prediction, align = "l")
+```
+
 
 ## Conclusion
 
@@ -203,37 +223,37 @@ prediction %>%
 
 
 
-# WHO 
+## WHO 
 
 ## Exploratory Data Analysis
 
-Brief EDA of the dataset concerning the "WHO" questions. First, let's identify the duplicate questions:
+Exploratory data analysis of the dataset concerning the "WHO" questions. First, let's identify the duplicate questions:
 
 ```{r message=FALSE, warning=FALSE}
-#data_dup is dataframe containing all columns except the answers filtering by 
-#"who" questions. If there are duplicate questions with different answers,
-#we should see duplicated rows in this dataframe.
+# data_dup is a dataframe containing all columns except the answers filtering by 
+# "who" questions. If there are duplicate questions with different answers,
+# we should see duplicated rows in this dataframe.
 
 data_dup <- data %>% 
   filter(str_detect(question, "who")) %>% 
-  select(id, day, Battery, question) %>% 
-  drop_na()
+  select(id, day, Battery, question)
+
 
 anyDuplicated(data_dup)
 
 ```
 
-We see that there are no duplicated rows, indicating that there are no replicate questions. Let's continue exploring the dataset.
+We see that there are no duplicated rows, indicating that there are no replicated questions. Let's continue exploring the dataset.
 
 ```{r, message=FALSE, warning=FALSE}
 
 data_who <- data %>% 
-  filter(str_detect(question, "who")) %>% 
-  drop_na()
+  filter(str_detect(question, "who"))
+
 
 head(data_who)
 
-#Calculating the who-score for every id to obtain a single row for week.
+#Calculating the who-index for every id to obtain a single row per week.
 
 data_who_calc <- data_who %>% 
   group_by(id, day) %>% 
@@ -243,45 +263,155 @@ data_who_calc <- data_who %>%
 data_who_calc <- data_who_calc[!duplicated(data_who_calc),]
 
 
-
+# Metrics for the WHO-index bt day
 data_who_stats <-  data_who_calc %>% 
   group_by(day) %>% 
-get_summary_stats(Value)
+get_summary_stats(Value, show = c("n", "mean", "ci"))
 
-kable(data_who_stats)
+# I create the vector differences week by week to add it to the table
+differences <- c(0, 
+                 data_who_stats$mean[2] - data_who_stats$mean[1],
+                 data_who_stats$mean[3] - data_who_stats$mean[2],
+                 data_who_stats$mean[4] - data_who_stats$mean[3])
+
+data_who_stats$Change <- differences
+
+kable(data_who_stats, caption = "Metrics of the WHO-index by day")
 
 ```
 ***
-Evaluating the means and the confidence interavals, we can say that there is no statistically singnificant increase in the who-score. Let's evaluate this with a t-test:
+Evaluating the means and the confidence interavals, we can say that there is statistically significant difference in the WHO-index mean for some weeks. When we compare the change in the index and assuming that a 10% change is a significant one, we observe a significant increase of 10.4% from day 7 (when participants started using the product) to day 21. Let's see this graphically:
 
-```{r, message=FALSE, warning=FALSE}
+```{r, warning=FALSE, message=FALSE, fig.cap= "WHO Well being index of participants during the study. p-values were obtained by a t-test."}
+
+data_who_calc %>%
+  mutate("Beverage Consumption" = ifelse(day > 7, "Yes", "No"),
+         day = factor(day, levels = c(0, 7, 14, 21))) %>% 
+  ggplot(aes(day, Value, fill = `Beverage Consumption`))+
+  geom_boxplot()+
+  geom_jitter(alpha = 0.2)+
+  geom_pwc(method = "t_test")+
+  ylab("WHO Well Being Index (%)")+
+  theme_minimal()
+  
+
+
+```
+***
+
+Now, let's see the change in the index by week:
+
+
+
+```{r, message=FALSE, warning=FALSE, fig.cap= "Change in the WHO Well-Being Index during the study for each participant."}
 # Convert the dataframe to a wide format to obtain one row per id:
 
 data_who_wide <- data_who_calc %>% 
   select(-Battery) %>% 
-  pivot_wider(names_from = day, values_from = Value) %>% 
-  drop_na()
+  pivot_wider(names_from = day, values_from = Value)
 
-t.test(data_who_wide$`0`, data_who_wide$`21`)
 
-```
-***
-Statistically, there is no significant difference between the who-score at the beginning of the study and the final one. However WHO indicates that a 10% difference is indicative of significant difference. Let's calculate that difference:
-
-```{r, message=FALSE, warning=FALSE}
-
-who_score_dif <- tibble(id = data_who_wide$id,
+# I create a dataframe whith the differences in who-index per week
+who_index_dif <- tibble(id = data_who_wide$id,
+        "0" = 0,
        "1" = data_who_wide$`7` - data_who_wide$`0`,
        "2" = data_who_wide$`14` - data_who_wide$`7`,
        "3" = data_who_wide$`21` - data_who_wide$`14`,
        "total" = data_who_wide$`21` - data_who_wide$`0`)
 
-who_score_dif_weekly <- who_score_dif %>%
+# dataframe in long format with weekly differences per participant
+who_index_dif_weekly <- who_index_dif %>%
   select(-total) %>% 
-  pivot_longer(cols = 2:4, names_to = "week", values_to = "Value") %>% 
+  pivot_longer(cols = 2:5, names_to = "week", values_to = "Value") %>% 
   mutate(week = as.numeric(week))
 
-who_score_dif_total <- who_score_dif %>% 
+#dataframe with total differences day 0 to 21
+who_index_dif_total <- who_index_dif %>% 
   select(id, total)
 
+
+
+who_index_dif_weekly %>% 
+  mutate(id = as_factor(id)) %>% 
+  ggplot(aes(week, Value, color = id))+
+  geom_line(alpha = 0.7)+
+  geom_vline(xintercept = 1, linetype = 2)+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  geom_hline(yintercept = c(10, -10))+
+  scale_y_continuous(breaks = c(-60, -30, -10, 0, 10, 30))+
+  ylab("Change in WHO Well Being Index (%)")+
+  annotate(geom = "text", x = 2.5, y = 40, label = "Zone of significant index increase")+
+    annotate(geom = "text", x = 2.5, y = 0, label = "Zone of no significant index change")+
+    annotate(geom = "text", x = 2.5, y = -40, label = "Zone of significant index decrease ")
+
 ```
+***
+
+We can see that from day 7 to 21, on average, the change in the index increases. By the week 3, the average increase from the start of the beverage consumption is significant (10.4%). 
+
+## Modeling
+
+Now, let's propose a mixed effects linear model to fit this data. In this case, the outcome is a continuos value and a linear model suits well for that purpose. Let's propose a model that incorporates beverage consumption as a variable.
+
+```{r warning=FALSE, message=FALSE}
+# add the variable bev (beverage consumption yes or no)
+data_who_calc <- data_who_calc %>% 
+  mutate(bev = factor(ifelse(day > 7, 1,0)))
+
+# I use the lmerTest package because it incorporates p-values
+model1 <- lmerTest::lmer(Value ~ day + day*bev + (1|id),
+                     data = data_who_calc,
+                     REML = TRUE)
+summary(model1)
+```
+***
+We can see that the WHO-index decreases 1.2 units per day when no consuming the beverage, but increases 1.5 units per day when consuming it. These effects are statistically significant as we can see from their p-values. Let's see what happens if we predict the index value for the days 7 (without beverage consumption) and 21 (with beverage consumption) and calculate the change to see if it is 10%.
+
+```{r warning=FALSE, message=FALSE}
+prediction <- predict(model1, newdata = tibble(day = c(7,21), bev = factor(c(0,1))), re.form = NA)
+
+prediction[2] - prediction[1]
+```
+***
+The value obtained is at the edge of significance. Let's compare the average index change with the change of 15 random participants:
+
+```{r warning=FALSE, message=FALSE, fig.cap= "Comparison of the average change in the WHO Well-Being Index with 15 random participants}
+#Let's calculate the average change per week:
+
+change_avg <- who_index_dif_weekly %>% 
+  group_by(week) %>% 
+  summarise(Change = mean(Value)) 
+
+# and fit a lm:
+
+fit <- lm(Change ~ week, change_avg)
+
+# Sample random ids
+newdata_i <- sample(data_who_calc$id, size = 15)
+
+# and create a sampled data of 15 ids
+sampled_data <- who_index_dif_weekly %>% 
+  filter(id %in% newdata_i)
+
+
+sampled_data %>% 
+  mutate(id = factor(id)) %>% 
+ggplot(aes(week, Value, color = id))+
+  geom_line()+
+  geom_abline(slope = fit$coefficients[2], intercept = fit$coefficients[1])+
+  theme_minimal()+
+    theme(legend.position = "none")+
+  geom_hline(yintercept = c(10, -10), linetype = 2)+
+  scale_y_continuous(breaks = c(-60, -30, -10, 0, 10, 30))+
+  ylab("Change in WHO Well Being Index (%)")+
+  annotate(geom = "text", x = 2.5, y = 40, label = "Zone of significant index increase")+
+    annotate(geom = "text", x = 2.5, y = 0, label = "Zone of no significant index change")+
+    annotate(geom = "text", x = 2.5, y = -40, label = "Zone of significant index decrease ")
+  
+
+
+
+
+```
+
