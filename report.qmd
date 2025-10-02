@@ -75,7 +75,7 @@ The proportion of "no" answers during beverage is 6% higher than the proportion 
 
 In the next plot, the proportion of "no" answers per individual is depicted.
 
-```{r message=FALSE, warning=FALSE, fig.cap= "Proportion of 'no' answers per individual previous to and during the consumption of the beverage.p-values were obtained by a Wilcox test"}
+```{r message=FALSE, warning=FALSE, fig.cap= "Proportion of 'no' answers per individual previous to and during the consumption of the beverage.p-values were obtained by a Wilcox test."}
 
 daily_alc %>%
   group_by(id, Battery) %>%
