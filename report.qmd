@@ -71,7 +71,7 @@ kable(daily_alc_stats, caption = "Metrics of 'no' answers during and pre beverag
 
 ```
 ***
-The proportion of "no" answers during beverage is 6% higher than the proportion of "no" answers when pre beverage. The difference is statistically signifcant because of no overlapping 95% confidence intervals.  
+The proportion of "no" answers during beverage is 6% higher than the proportion of "no" answers when pre beverage. The difference is statistically significant because of no overlapping 95% confidence intervals.  
 
 In the next plot, the proportion of "no" answers per individual is depicted.
 
